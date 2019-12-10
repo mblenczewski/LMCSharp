@@ -1,0 +1,328 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LmcLib</name>
+    </assembly>
+    <members>
+        <member name="T:LmcLib.AddressModes">
+            <summary>
+            The addressing modes of an operand.
+            </summary>
+        </member>
+        <member name="F:LmcLib.AddressModes.Direct">
+            <summary>
+            Direct addressing. The operand is at the given address in memory.
+            </summary>
+        </member>
+        <member name="F:LmcLib.AddressModes.Indirect">
+            <summary>
+            Indirect addressing. The operand is at the location in memory given by the value at the given address in memory.
+            </summary>
+        </member>
+        <member name="F:LmcLib.AddressModes.Immediate">
+            <summary>
+            Immediate addressing. The operand is the value passed to the instruction.
+            </summary>
+        </member>
+        <member name="F:LmcLib.AddressModes.Relative">
+            <summary>
+            Relative addressing. The operand is at the given offset to the current program counter.
+            </summary>
+        </member>
+        <member name="T:LmcLib.ArchitectureWidth">
+            <summary>
+            Describes the width of the architecture.
+            </summary>
+        </member>
+        <member name="F:LmcLib.ArchitectureWidth.Default">
+            <summary>
+            Represents a 32-bit architecture.
+            </summary>
+        </member>
+        <member name="T:LmcLib.InstructionDecoder">
+            <summary>
+            Represents a method that decodes a given encoded instruction into an opcode, and also outputs the address modes of
+            the operands that are associated with the given instruction.
+            </summary>
+            <param name="encodedInstruction">The encoded instruction.</param>
+            <param name="operandModes">The address modes of the operands associated with the instruction.</param>
+            <returns>The instruction opcode.</returns>
+        </member>
+        <member name="T:LmcLib.InstructionDelegate">
+            <summary>
+            Represents a method that implements an instruction.
+            </summary>
+            <param name="globalMemory">The global memory available to the instruction.</param>
+            <param name="registers">The registers that store the program state.</param>
+            <param name="operands">The operands that were passed to the instruction.</param>
+            <param name="input">Allows the instruction to get external user input.</param>
+            <param name="output">Allows the instruction to send output to the user.</param>
+            <returns>What the computer should do after the instruction finishes execution.</returns>
+        </member>
+        <member name="T:LmcLib.Computer">
+            <summary>
+            Represents a computer capable of sequentially executing instructions.
+            </summary>
+        </member>
+        <member name="F:LmcLib.Computer.architecture">
+            <summary>
+            The underlying architecture.
+            </summary>
+        </member>
+        <member name="F:LmcLib.Computer.instructionSet">
+            <summary>
+            Holds the instruction set, indexed by opcode.
+            </summary>
+        </member>
+        <member name="F:LmcLib.Computer.memory">
+            <summary>
+            The global memory for the computer.
+            </summary>
+        </member>
+        <member name="F:LmcLib.Computer.registers">
+            <summary>
+            Holds the registers in the processor, indexed by their names.
+            </summary>
+        </member>
+        <member name="F:LmcLib.Computer.inputReader">
+            <summary>
+            The input reader for getting external input.
+            </summary>
+        </member>
+        <member name="F:LmcLib.Computer.outputWriter">
+            <summary>
+            The output writer for writing external output.
+            </summary>
+        </member>
+        <member name="F:LmcLib.Computer.OpcodeMask">
+            <summary>
+            The byte mask to use to get the opcode from an encoded opcode.
+            </summary>
+        </member>
+        <member name="F:LmcLib.Computer.OperandAddressModeMasks">
+            <summary>
+            Holds the byte masks used to get the addressing modes of the operands to an instruction.
+            </summary>
+        </member>
+        <member name="M:LmcLib.Computer.#ctor(System.UInt32,LmcLib.ArchitectureWidth)">
+            <summary>
+            Initialises a new instance of the <see cref="T:LmcLib.Computer"/> class.
+            </summary>
+            <param name="memorySize">The amount of bytes to allocate as memory.</param>
+            <param name="architectureWidth">The width of the computer architecture, determining the size of registers.</param>
+        </member>
+        <member name="M:LmcLib.Computer.DecodeInstruction(System.UInt16@,LmcLib.AddressModes[]@)">
+            <summary>
+            Decodes the given instruction into the opcode key and the address modes of the instruction operands.
+            </summary>
+            <param name="encodedInstruction">The encoded instruction to execute.</param>
+            <param name="operandAddressModes">The addressing modes for the instruction operands.</param>
+            <returns>The instruction opcode key.</returns>
+        </member>
+        <member name="M:LmcLib.Computer.UnwrapOperand(System.ArraySegment{System.Byte}@,LmcLib.InstructionOperand,System.Int32)">
+            <summary>
+            Unwraps the given operand into a value, according to its address mode.
+            </summary>
+            <param name="globalMemory">The global memory available to the instruction.</param>
+            <param name="operand">The operand whose value to unwrap.</param>
+            <param name="valueWidth">The number of bytes to slice from the value.</param>
+            <returns>The array segment containing the desired value.</returns>
+        </member>
+        <member name="M:LmcLib.Computer.Execute(System.Int32,LmcLib.InstructionDecoder)">
+            <summary>
+            Executes the program currently stored in memory, starting at the given memory address.
+            </summary>
+            <param name="startingProgramCounter">The memory address at which program execution will start.</param>
+            <param name="instructionDecoder">The instruction decoder to use.</param>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+            Thrown when an instruction returns an invalid <see cref="T:LmcLib.InstructionResultType"/>.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            Thrown when an unknown opcode is encountered within the program.
+            </exception>
+        </member>
+        <member name="M:LmcLib.Computer.LoadProgram(System.ReadOnlyMemory{System.Byte}@,System.Int32)">
+            <summary>
+            Loads the given program into memory, at the given offset.
+            </summary>
+            <param name="programContents">The program serialised to binary.</param>
+            <param name="offset">The offset into memory where the program should be stored at.</param>
+        </member>
+        <member name="M:LmcLib.Computer.SetInput(System.IO.TextReader@)">
+            <summary>
+            Sets the external input reader for this computer.
+            </summary>
+            <param name="readerImplementation">The reader implementation to use.</param>
+        </member>
+        <member name="M:LmcLib.Computer.SetOutput(System.IO.TextWriter@)">
+            <summary>
+            Sets the external output writer for this computer.
+            </summary>
+            <param name="writerImplementation">The writer implementation to use.</param>
+        </member>
+        <member name="M:LmcLib.Computer.TryDeregisterInstruction(System.Byte,LmcLib.Instruction@)">
+            <summary>
+            Attempts to deregister the instruction with the given opcode.
+            </summary>
+            <param name="opcode">The opcode that corresponds to the instruction to deregister.</param>
+            <param name="oldInstruction">The old instruction implementation.</param>
+            <returns>Whether the instruction was successfully deregistered.</returns>
+        </member>
+        <member name="M:LmcLib.Computer.TryRegisterInstruction(LmcLib.Instruction@)">
+            <summary>
+            Attempts to register the given instruction, using its opcode as the key.
+            </summary>
+            <param name="instruction">The instruction implementation.</param>
+            <returns>Whether the instruction was successfully registered.</returns>
+        </member>
+        <member name="M:LmcLib.Computer.TryUpdateInstruction(System.Byte,LmcLib.Instruction@,LmcLib.Instruction@)">
+            <summary>
+            Attempts to update the instruction implementation for the instruction with the given opcode key.
+            </summary>
+            <param name="opcode">The opcode that corresponds to the instruction to update.</param>
+            <param name="newInstruction">The new instruction implementation.</param>
+            <param name="oldInstruction">The old instruction implementation.</param>
+            <returns>Whether the instruction was successfully updated.</returns>
+        </member>
+        <member name="T:LmcLib.Instruction">
+            <summary>
+            Represents an instruction capable of being executed by the LMC.
+            </summary>
+        </member>
+        <member name="F:LmcLib.Instruction.Func">
+            <summary>
+            The delegate method that implements the instruction.
+            </summary>
+        </member>
+        <member name="F:LmcLib.Instruction.Mnemonic">
+            <summary>
+            The mnemonic that represents this instruction.
+            </summary>
+        </member>
+        <member name="F:LmcLib.Instruction.Opcode">
+            <summary>
+            The opcode for the instruction.
+            </summary>
+        </member>
+        <member name="F:LmcLib.Instruction.OperandCount">
+            <summary>
+            The number of operands this instruction takes.
+            </summary>
+        </member>
+        <member name="M:LmcLib.Instruction.#ctor(System.Byte,System.Byte,System.String,LmcLib.InstructionDelegate)">
+            <summary>
+            Initialises a new instance of the <see cref="T:LmcLib.Instruction"/> struct.
+            </summary>
+            <param name="opcode"></param>
+            <param name="operandCount"></param>
+            <param name="mnemonic"></param>
+            <param name="func"></param>
+        </member>
+        <member name="T:LmcLib.InstructionOperand">
+            <summary>
+            Represents an instruction operand.
+            </summary>
+        </member>
+        <member name="F:LmcLib.InstructionOperand.OperandSize">
+            <summary>
+            The size of the operand in bytes.
+            </summary>
+        </member>
+        <member name="F:LmcLib.InstructionOperand.AddressingMode">
+            <summary>
+            The addressing mode for this operand.
+            </summary>
+        </member>
+        <member name="F:LmcLib.InstructionOperand.Value">
+            <summary>
+            The data stored in this operand.
+            </summary>
+        </member>
+        <member name="M:LmcLib.InstructionOperand.#ctor(LmcLib.AddressModes,System.ArraySegment{System.Byte})">
+            <summary>
+            Initialises a new instance of the <see cref="T:LmcLib.InstructionOperand"/> struct.
+            </summary>
+            <param name="addressingMode">The address mode for this operand.</param>
+            <param name="value">The data stored in this operand.</param>
+        </member>
+        <member name="T:LmcLib.InstructionResult">
+            <summary>
+            Represents the outcome of an instruction.
+            </summary>
+        </member>
+        <member name="F:LmcLib.InstructionResult.Continue">
+            <summary>
+            Represents a continue instruction.
+            </summary>
+        </member>
+        <member name="F:LmcLib.InstructionResult.Halt">
+            <summary>
+            Represents a halt instruction.
+            </summary>
+        </member>
+        <member name="F:LmcLib.InstructionResult.JumpAddress">
+            <summary>
+            The address to jump to.
+            </summary>
+        </member>
+        <member name="F:LmcLib.InstructionResult.Result">
+            <summary>
+            The result of the instruction.
+            </summary>
+        </member>
+        <member name="M:LmcLib.InstructionResult.#ctor(LmcLib.InstructionResultType,System.Int32)">
+            <summary>
+            Initialises a new instance of the <see cref="T:LmcLib.InstructionResult"/> struct.
+            </summary>
+            <param name="result">The result of the last instruction.</param>
+            <param name="jumpAddress">The address to jump to, if the outcome is a jump instruction.</param>
+        </member>
+        <member name="T:LmcLib.InstructionResultType">
+            <summary>
+            Describes the outcome of an instruction.
+            </summary>
+        </member>
+        <member name="F:LmcLib.InstructionResultType.Halt">
+            <summary>
+            The computer should halt after the current instruction finishes execution.
+            </summary>
+        </member>
+        <member name="F:LmcLib.InstructionResultType.Continue">
+            <summary>
+            The computer should increment the program counter after the current instruction finishes execution.
+            </summary>
+        </member>
+        <member name="F:LmcLib.InstructionResultType.Jump">
+            <summary>
+            The computer should jump to a specified address.
+            </summary>
+        </member>
+        <member name="T:LmcLib.MemoryRegister">
+            <summary>
+            Describes a processor register.
+            </summary>
+        </member>
+        <member name="F:LmcLib.MemoryRegister.NullRegister">
+            <summary>
+            Represents a null memory register.
+            </summary>
+        </member>
+        <member name="F:LmcLib.MemoryRegister.Contents">
+            <summary>
+            The contents of the register.
+            </summary>
+        </member>
+        <member name="F:LmcLib.MemoryRegister.Name">
+            <summary>
+            The name of the register.
+            </summary>
+        </member>
+        <member name="M:LmcLib.MemoryRegister.#ctor(LmcLib.ArchitectureWidth,System.String)">
+            <summary>
+            Initialises a new instance of the <see cref="T:LmcLib.MemoryRegister"/> struct.
+            </summary>
+            <param name="width">The width of the register.</param>
+            <param name="name">The name of the register.</param>
+        </member>
+    </members>
+</doc>
