@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace LmcLib
 {
@@ -90,8 +92,19 @@ namespace LmcLib
             registers = new ConcurrentDictionary<string, MemoryRegister>();
             instructionSet = new ConcurrentDictionary<byte, Instruction>();
 
+            registers.TryAdd("PC", new MemoryRegister(ArchitectureWidth.Default, "PC"));
+            registers.TryAdd("ACC", new MemoryRegister(ArchitectureWidth.Default, "ACC"));
+
             inputReader = TextReader.Null;
             outputWriter = TextWriter.Null;
+        }
+
+        /// <summary>
+        /// Returns the instruction set currently in use by this computer.
+        /// </summary>
+        public IReadOnlyDictionary<byte, Instruction> InstructionSet
+        {
+            get { return instructionSet; }
         }
 
         /// <summary>
@@ -100,27 +113,50 @@ namespace LmcLib
         /// <param name="encodedInstruction">The encoded instruction to execute.</param>
         /// <param name="operandAddressModes">The addressing modes for the instruction operands.</param>
         /// <returns>The instruction opcode key.</returns>
-        public static byte DecodeInstruction(in ushort encodedInstruction, out AddressModes[] operandAddressModes)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static byte DecodeInstruction(in ushort encodedInstruction, out AddressModes[] operandAddressModes)
         {
             ushort opcode = (ushort)(encodedInstruction & OpcodeMask);
 
             operandAddressModes = new AddressModes[OperandAddressModeMasks.Length];
-            for (int i = 0; i < operandAddressModes.Length; i++)
+            for (ushort i = 0; i < operandAddressModes.Length; i++)
             {
-                ushort maskedOperandAddressMode = (ushort)(encodedInstruction & OperandAddressModeMasks[i]);
+                ushort maskedOperandAddressMode = (ushort)(encodedInstruction & OperandAddressModeMasks[^(i + 1)]);
                 ushort operandAddressMode = (ushort)(maskedOperandAddressMode >> (8 + 2 * i));
 
                 operandAddressModes[i] = operandAddressMode switch
                 {
-                    0 => AddressModes.Immediate,
-                    1 => AddressModes.Direct,
-                    2 => AddressModes.Indirect,
+                    0 => AddressModes.Direct,
+                    1 => AddressModes.Indirect,
+                    2 => AddressModes.Immediate,
                     3 => AddressModes.Relative,
                     _ => AddressModes.Immediate,
                 };
             }
 
             return (byte)opcode;
+        }
+
+        /// <summary>
+        /// Encodes the given opcode and operand address modes into an instruction.
+        /// </summary>
+        /// <param name="opcode">The opcode of the instruction.</param>
+        /// <param name="operandAddressModes">The address modes of the instruction operands.</param>
+        /// <returns>The encoded instruction.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ushort EncodeInstruction(in byte opcode, in AddressModes[] operandAddressModes)
+        {
+            ushort encodedInstruction = opcode;
+
+            for (ushort i = 0; i < operandAddressModes.Length; i++)
+            {
+                ushort operandAddressMode = (ushort)operandAddressModes[i];
+                ushort encodedOperandAddressMode = (ushort)(operandAddressMode << 8 + 2 * i);
+
+                encodedInstruction |= encodedOperandAddressMode;
+            }
+
+            return encodedInstruction;
         }
 
         /// <summary>
@@ -208,9 +244,7 @@ namespace LmcLib
                             break;
 
                         case InstructionResultType.Continue:
-                            if (instruction.OperandCount <= 0) { continue; }
-
-                            programCounter += sizeof(ushort) + instruction.OperandCount * InstructionOperand.OperandSize;
+                            programCounter += sizeof(ushort) + (instruction.OperandCount * InstructionOperand.OperandSize);
                             break;
 
                         case InstructionResultType.Jump:

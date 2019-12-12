@@ -111,6 +111,11 @@
             <param name="memorySize">The amount of bytes to allocate as memory.</param>
             <param name="architectureWidth">The width of the computer architecture, determining the size of registers.</param>
         </member>
+        <member name="P:LmcLib.Computer.InstructionSet">
+            <summary>
+            Returns the instruction set currently in use by this computer.
+            </summary>
+        </member>
         <member name="M:LmcLib.Computer.DecodeInstruction(System.UInt16@,LmcLib.AddressModes[]@)">
             <summary>
             Decodes the given instruction into the opcode key and the address modes of the instruction operands.
@@ -118,6 +123,14 @@
             <param name="encodedInstruction">The encoded instruction to execute.</param>
             <param name="operandAddressModes">The addressing modes for the instruction operands.</param>
             <returns>The instruction opcode key.</returns>
+        </member>
+        <member name="M:LmcLib.Computer.EncodeInstruction(System.Byte@,LmcLib.AddressModes[]@)">
+            <summary>
+            Encodes the given opcode and operand address modes into an instruction.
+            </summary>
+            <param name="opcode">The opcode of the instruction.</param>
+            <param name="operandAddressModes">The address modes of the instruction operands.</param>
+            <returns>The encoded instruction.</returns>
         </member>
         <member name="M:LmcLib.Computer.UnwrapOperand(System.ArraySegment{System.Byte}@,LmcLib.InstructionOperand,System.Int32)">
             <summary>
@@ -187,6 +200,11 @@
         <member name="T:LmcLib.Instruction">
             <summary>
             Represents an instruction capable of being executed by the LMC.
+            </summary>
+        </member>
+        <member name="F:LmcLib.Instruction.Halt">
+            <summary>
+            Represents a halt instruction.
             </summary>
         </member>
         <member name="F:LmcLib.Instruction.Func">
@@ -323,6 +341,18 @@
             </summary>
             <param name="width">The width of the register.</param>
             <param name="name">The name of the register.</param>
+        </member>
+        <member name="M:LmcLib.MemoryRegister.GetContents">
+            <summary>
+            Returns the contents of the register, converted to a <see cref="T:System.Int64"/>.
+            </summary>
+            <returns>The current contents of the register.</returns>
+        </member>
+        <member name="M:LmcLib.MemoryRegister.SetContents(System.Int64)">
+            <summary>
+            Sets the contents of the register.
+            </summary>
+            <param name="value">The value to set the register to.</param>
         </member>
     </members>
 </doc>

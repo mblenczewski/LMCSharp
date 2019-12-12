@@ -1,4 +1,6 @@
-﻿namespace LmcLib
+﻿using System;
+
+namespace LmcLib
 {
     /// <summary>
     /// Describes a processor register.
@@ -29,11 +31,29 @@
         {
             Contents = width switch
             {
-                ArchitectureWidth.Default => new byte[4],
-                _ => new byte[4],
+                ArchitectureWidth.Default => new byte[8],
+                _ => new byte[8],
             };
 
             Name = name;
+        }
+
+        /// <summary>
+        /// Returns the contents of the register, converted to a <see cref="long"/>.
+        /// </summary>
+        /// <returns>The current contents of the register.</returns>
+        public long GetContents()
+        {
+            return BitConverter.ToInt64(Contents);
+        }
+
+        /// <summary>
+        /// Sets the contents of the register.
+        /// </summary>
+        /// <param name="value">The value to set the register to.</param>
+        public void SetContents(long value)
+        {
+            BitConverter.GetBytes(value).CopyTo(Contents, 0);
         }
     }
 }

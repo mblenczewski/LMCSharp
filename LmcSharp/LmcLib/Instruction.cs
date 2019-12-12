@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.IO;
 
 namespace LmcLib
 {
@@ -7,6 +9,13 @@ namespace LmcLib
     /// </summary>
     public readonly struct Instruction
     {
+        /// <summary>
+        /// Represents a halt instruction.
+        /// </summary>
+        public static readonly Instruction Halt = new Instruction(0, 0, "HLT",
+            (in ArraySegment<byte> memory, in ConcurrentDictionary<string, MemoryRegister> registers,
+                in InstructionOperand[] operands, in TextReader input, in TextWriter output) => InstructionResult.Halt);
+
         /// <summary>
         /// The delegate method that implements the instruction.
         /// </summary>

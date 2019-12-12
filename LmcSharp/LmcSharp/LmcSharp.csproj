@@ -10,4 +10,9 @@
     <ProjectReference Include="..\LmcLib\LmcLib.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="exampleCode.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
